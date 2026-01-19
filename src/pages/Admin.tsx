@@ -30,7 +30,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -608,14 +607,15 @@ const Admin = () => {
                         <form onSubmit={handleEditSubmit} className="space-y-4">
                           {renderFormFields(true)}
                           <div className="flex gap-3 pt-2">
-                            <Button type="button" variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => { setEditingListing(null); setFormData(emptyFormData); }}>
+                            <Button type="button" variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => { setEditingListing(null); setFormData(emptyFormData); }} disabled={isSubmitting}>
                               取消
                             </Button>
                             <Button
                               type="submit"
                               className="flex-1 h-11 bg-warm-gold hover:bg-warm-gold/90 text-white rounded-xl"
+                              disabled={isSubmitting}
                             >
-                              儲存
+                              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "儲存"}
                             </Button>
                           </div>
                         </form>
@@ -772,14 +772,15 @@ const Admin = () => {
                               <form onSubmit={handleEditSubmit} className="space-y-4">
                                 {renderFormFields(true)}
                                 <div className="flex gap-3 pt-2">
-                                  <Button type="button" variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => { setEditingListing(null); setFormData(emptyFormData); }}>
+                                  <Button type="button" variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => { setEditingListing(null); setFormData(emptyFormData); }} disabled={isSubmitting}>
                                     取消
                                   </Button>
                                   <Button
                                     type="submit"
                                     className="flex-1 h-11 bg-warm-gold hover:bg-warm-gold/90 text-white rounded-xl"
+                                    disabled={isSubmitting}
                                   >
-                                    儲存
+                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "儲存"}
                                   </Button>
                                 </div>
                               </form>
