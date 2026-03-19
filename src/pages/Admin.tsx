@@ -395,14 +395,14 @@ const Admin = () => {
 
         {/* Mobile Database Status */}
         <div className={`sm:hidden flex items-center justify-center gap-2 mb-4 px-3 py-2 rounded-xl text-xs font-medium ${
-          isUsingSupabase
+          isUsingNeon
             ? "bg-green-100 text-green-700"
             : "bg-amber-100 text-amber-700"
         }`}>
-          {isUsingSupabase ? (
+          {isUsingNeon ? (
             <>
               <Database className="w-3.5 h-3.5" />
-              <span>已連接 Supabase 資料庫</span>
+              <span>已連接 Neon 資料庫</span>
             </>
           ) : (
             <>
