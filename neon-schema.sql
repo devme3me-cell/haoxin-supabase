@@ -1,36 +1,5 @@
--- Supabase Schema for Haoxin Listings
--- Run this in your Supabase SQL Editor
-
--- =============================================
--- STEP 1: Create Storage Bucket (do this first in Supabase Dashboard)
--- =============================================
--- 1. Go to Storage in your Supabase Dashboard
--- 2. Click "New bucket"
--- 3. Name: "listings"
--- 4. Check "Public bucket" to allow public access
--- 5. Click "Create bucket"
-
--- Or run this SQL to create the bucket:
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('listings', 'listings', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Allow public access to the listings bucket
-CREATE POLICY "Public Access" ON storage.objects
-  FOR SELECT USING (bucket_id = 'listings');
-
-CREATE POLICY "Anyone can upload" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'listings');
-
-CREATE POLICY "Anyone can update" ON storage.objects
-  FOR UPDATE USING (bucket_id = 'listings');
-
-CREATE POLICY "Anyone can delete" ON storage.objects
-  FOR DELETE USING (bucket_id = 'listings');
-
--- =============================================
--- STEP 2: Create Listings Table
--- =============================================
+-- Neon Database Schema for Haoxin Listings
+-- Run this in your Neon SQL Editor: https://console.neon.tech
 
 -- Create listings table
 CREATE TABLE IF NOT EXISTS listings (
@@ -46,27 +15,10 @@ CREATE TABLE IF NOT EXISTS listings (
   sold BOOLEAN DEFAULT FALSE
 );
 
--- Enable Row Level Security (RLS)
-ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
-
--- Allow public read access
-CREATE POLICY "Allow public read access" ON listings
-  FOR SELECT USING (true);
-
--- Allow public insert (for admin panel)
-CREATE POLICY "Allow public insert" ON listings
-  FOR INSERT WITH CHECK (true);
-
--- Allow public update (for admin panel)
-CREATE POLICY "Allow public update" ON listings
-  FOR UPDATE USING (true);
-
--- Allow public delete (for admin panel)
-CREATE POLICY "Allow public delete" ON listings
-  FOR DELETE USING (true);
-
--- Enable realtime updates
-ALTER PUBLICATION supabase_realtime ADD TABLE listings;
+-- Create index for faster queries
+CREATE INDEX IF NOT EXISTS idx_listings_created_at ON listings(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_listings_type ON listings(type);
+CREATE INDEX IF NOT EXISTS idx_listings_sold ON listings(sold);
 
 -- Insert initial data (optional - run once)
 INSERT INTO listings (id, title, type, location, price, description, image_url, created_at, owner_name, sold) VALUES

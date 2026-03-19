@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { listingsQuery, isNeonConfigured, type DbListing } from "@/lib/neon";
 
 // Listing type definition
 export interface Listing {
@@ -15,19 +15,7 @@ export interface Listing {
   sold?: boolean;
 }
 
-// Database type (snake_case for Supabase)
-interface DbListing {
-  id: string;
-  title: string;
-  type: "出售" | "收購";
-  location: string;
-  price: string;
-  description: string;
-  image_url?: string;
-  created_at: string;
-  owner_name: string;
-  sold?: boolean;
-}
+// Database type imported from neon.ts
 
 // Convert from database format to app format
 const fromDbListing = (db: DbListing): Listing => ({
@@ -187,7 +175,7 @@ interface ListingsContextType {
   listings: Listing[];
   loading: boolean;
   error: string | null;
-  isUsingSupabase: boolean;
+  isUsingNeon: boolean;
   addListing: (listing: Omit<Listing, "id" | "createdAt">) => Promise<void>;
   updateListing: (id: string, listing: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
@@ -204,7 +192,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUsingSupabase] = useState(() => isSupabaseConfigured());
+  const [isUsingNeon] = useState(() => isNeonConfigured());
 
   // Load listings from localStorage
   const loadFromLocalStorage = useCallback(() => {
@@ -226,15 +214,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, []);
 
-  // Fetch listings from Supabase
-  const fetchFromSupabase = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("listings")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-    return (data as DbListing[]).map(fromDbListing);
+  // Fetch listings from Neon
+  const fetchFromNeon = useCallback(async () => {
+    const data = await listingsQuery.getAll();
+    return data.map(fromDbListing);
   }, []);
 
   // Refresh listings
@@ -242,8 +225,8 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      if (isUsingSupabase) {
-        const data = await fetchFromSupabase();
+      if (isUsingNeon) {
+        const data = await fetchFromNeon();
         setListings(data);
       } else {
         const data = loadFromLocalStorage();
@@ -251,46 +234,25 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "載入資料失敗");
-      // Fallback to localStorage on Supabase error
+      // Fallback to localStorage on Neon error
       const data = loadFromLocalStorage();
       setListings(data);
     } finally {
       setLoading(false);
     }
-  }, [isUsingSupabase, fetchFromSupabase, loadFromLocalStorage]);
+  }, [isUsingNeon, fetchFromNeon, loadFromLocalStorage]);
 
   // Initial load
   useEffect(() => {
     refreshListings();
   }, [refreshListings]);
 
-  // Persist to localStorage when not using Supabase
+  // Persist to localStorage when not using Neon
   useEffect(() => {
-    if (!isUsingSupabase && listings.length > 0) {
+    if (!isUsingNeon && listings.length > 0) {
       saveToLocalStorage(listings);
     }
-  }, [listings, isUsingSupabase, saveToLocalStorage]);
-
-  // Subscribe to real-time updates from Supabase
-  useEffect(() => {
-    if (!isUsingSupabase) return;
-
-    const channel = supabase
-      .channel("listings-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "listings" },
-        () => {
-          // Refresh on any change
-          refreshListings();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [isUsingSupabase, refreshListings]);
+  }, [listings, isUsingNeon, saveToLocalStorage]);
 
   const addListing = async (listing: Omit<Listing, "id" | "createdAt">) => {
     const newListing: Listing = {
@@ -299,12 +261,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString().split("T")[0],
     };
 
-    if (isUsingSupabase) {
+    if (isUsingNeon) {
       try {
-        const { error } = await supabase
-          .from("listings")
-          .insert([toDbListing(newListing)]);
-        if (error) throw error;
+        const dbListing = toDbListing(newListing) as DbListing;
+        await listingsQuery.create(dbListing);
         await refreshListings();
       } catch (err) {
         setError(err instanceof Error ? err.message : "新增失敗");
@@ -316,13 +276,9 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   };
 
   const updateListing = async (id: string, updates: Partial<Listing>) => {
-    if (isUsingSupabase) {
+    if (isUsingNeon) {
       try {
-        const { error } = await supabase
-          .from("listings")
-          .update(toDbListing(updates))
-          .eq("id", id);
-        if (error) throw error;
+        await listingsQuery.update(id, toDbListing(updates));
         await refreshListings();
       } catch (err) {
         setError(err instanceof Error ? err.message : "更新失敗");
@@ -338,10 +294,9 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteListing = async (id: string) => {
-    if (isUsingSupabase) {
+    if (isUsingNeon) {
       try {
-        const { error } = await supabase.from("listings").delete().eq("id", id);
-        if (error) throw error;
+        await listingsQuery.delete(id);
         await refreshListings();
       } catch (err) {
         setError(err instanceof Error ? err.message : "刪除失敗");
@@ -356,13 +311,9 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     const listing = listings.find((l) => l.id === id);
     if (!listing) return;
 
-    if (isUsingSupabase) {
+    if (isUsingNeon) {
       try {
-        const { error } = await supabase
-          .from("listings")
-          .update({ sold: !listing.sold })
-          .eq("id", id);
-        if (error) throw error;
+        await listingsQuery.update(id, { sold: !listing.sold });
         await refreshListings();
       } catch (err) {
         setError(err instanceof Error ? err.message : "更新失敗");
@@ -376,14 +327,14 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   };
 
   const resetListings = async () => {
-    if (isUsingSupabase) {
+    if (isUsingNeon) {
       try {
         // Delete all and insert initial
-        await supabase.from("listings").delete().neq("id", "");
-        const { error } = await supabase
-          .from("listings")
-          .insert(initialListings.map(toDbListing));
-        if (error) throw error;
+        await listingsQuery.deleteAll();
+        for (const listing of initialListings) {
+          const dbListing = toDbListing(listing) as DbListing;
+          await listingsQuery.create(dbListing);
+        }
         await refreshListings();
       } catch (err) {
         setError(err instanceof Error ? err.message : "重置失敗");
@@ -401,7 +352,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         listings,
         loading,
         error,
-        isUsingSupabase,
+        isUsingNeon,
         addListing,
         updateListing,
         deleteListing,

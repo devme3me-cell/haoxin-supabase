@@ -83,7 +83,7 @@ const Admin = () => {
   const [formData, setFormData] = useState<ListingFormData>(emptyFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { listings, loading, error, isUsingSupabase, addListing, updateListing, deleteListing, toggleSold, resetListings, refreshListings } =
+  const { listings, loading, error, isUsingNeon, addListing, updateListing, deleteListing, toggleSold, resetListings, refreshListings } =
     useListings();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -337,14 +337,14 @@ const Admin = () => {
             <div className="flex items-center gap-2">
               {/* Database Status */}
               <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
-                isUsingSupabase
+                isUsingNeon
                   ? "bg-green-100 text-green-700"
                   : "bg-amber-100 text-amber-700"
               }`}>
-                {isUsingSupabase ? (
+                {isUsingNeon ? (
                   <>
                     <Database className="w-3.5 h-3.5" />
-                    <span>Supabase</span>
+                    <span>Neon</span>
                   </>
                 ) : (
                   <>

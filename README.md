@@ -1,73 +1,182 @@
-# Welcome to your Lovable project
+# Haoxin Listings - Neon Version
 
-## Project info
+A modern web application for managing memorial service listings, now powered by Neon PostgreSQL database.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🎯 What's New
 
-## How can I edit this code?
+This project has been migrated from Supabase to **Neon Database** with the following changes:
 
-There are several ways of editing your application.
+- ✅ **Neon PostgreSQL** - Serverless PostgreSQL database
+- ✅ **Cloudinary** - Cloud image storage (optional)
+- ✅ **localStorage fallback** - Works without database for testing
+- ✅ **Removed real-time** - Simplified architecture
+- ✅ **Full TypeScript** - Type-safe database operations
 
-**Use Lovable**
+## 🚀 Quick Start
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 1. Install Dependencies
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+bun install
 ```
 
-**Edit a file directly in GitHub**
+### 2. Configure Environment (Optional)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Copy `.env.example` to `.env` and configure:
 
-**Use GitHub Codespaces**
+```bash
+# Neon Database (optional - uses localStorage if not configured)
+VITE_DATABASE_URL=your_neon_database_url
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Cloudinary (optional - uses base64 if not configured)
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+```
 
-## What technologies are used for this project?
+### 3. Start Development Server
 
-This project is built with:
+```bash
+bun dev
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The app will run on `http://localhost:8080`
 
-## How can I deploy this project?
+## 📦 Features
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### Public Features
+- Browse memorial service listings
+- Filter by type (出售/收購)
+- Search by title, location, or owner
+- View sold status
+- Responsive design
 
-## Can I connect a custom domain to my Lovable project?
+### Admin Features (Password: `haoxin2026`)
+- Add new listings
+- Edit existing listings
+- Delete listings
+- Toggle sold status
+- Upload images (cloud or local)
+- Reset to default data
+- Database status indicator
 
-Yes, you can!
+## 🗄️ Database Setup (Optional)
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+If you want to use Neon database instead of localStorage:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### 1. Create Neon Database
+
+1. Go to [https://console.neon.tech](https://console.neon.tech)
+2. Create a new project
+3. Copy the connection string
+
+### 2. Run Schema
+
+1. Open Neon SQL Editor
+2. Copy contents from `neon-schema.sql`
+3. Execute the SQL
+
+### 3. Update .env
+
+```bash
+VITE_DATABASE_URL=postgresql://user:password@host/database
+```
+
+## 🖼️ Image Storage
+
+### Option 1: Cloudinary (Recommended for Production)
+
+1. Create account at [https://cloudinary.com](https://cloudinary.com)
+2. Get your Cloud Name
+3. Create unsigned upload preset
+4. Update `.env`:
+
+```bash
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_preset
+```
+
+### Option 2: Base64 (Default)
+
+Images are stored as base64 strings if Cloudinary is not configured.
+Good for testing, not recommended for production.
+
+## 📁 Project Structure
+
+```
+haoxin-neon/
+├── src/
+│   ├── components/     # React components
+│   ├── context/        # ListingsContext with Neon integration
+│   ├── lib/
+│   │   ├── neon.ts              # Neon database client
+│   │   └── cloudinary-storage.ts # Image upload utilities
+│   └── pages/          # Page components
+├── neon-schema.sql     # Database schema
+├── MIGRATION_GUIDE.md  # Detailed migration docs
+└── .env.example        # Environment template
+```
+
+## 🔧 Technology Stack
+
+- **Frontend:** React 18 + TypeScript
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Database:** Neon PostgreSQL
+- **Storage:** Cloudinary (optional)
+- **Build:** Vite + Bun
+- **Routing:** React Router
+- **State:** React Context API
+
+## 📚 Documentation
+
+- [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) - Detailed migration from Supabase
+- [neon-schema.sql](./neon-schema.sql) - Database schema
+
+## 🚀 Deployment
+
+### Deploy to Zeabur (Recommended)
+
+**Quick Deploy (10 minutes):**
+
+1. Push code to GitHub
+2. Go to [zeabur.com](https://zeabur.com) and sign in
+3. Create new project → Add Service → Git
+4. Select your repository
+5. Add environment variables in Variables tab:
+   - `VITE_DATABASE_URL` (required)
+   - `VITE_CLOUDINARY_CLOUD_NAME` (optional)
+   - `VITE_CLOUDINARY_UPLOAD_PRESET` (optional)
+6. Redeploy if needed
+7. Get your free `*.zeabur.app` domain
+
+**📖 Detailed Guide:** See [ZEABUR_DEPLOYMENT.md](./ZEABUR_DEPLOYMENT.md)
+
+**✅ Checklist:** See [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)
+
+### Deploy to Netlify/Vercel
+
+1. Build the project:
+```bash
+bun run build
+```
+
+2. Deploy the `dist` folder
+
+3. Add environment variables in your hosting platform:
+   - `VITE_DATABASE_URL`
+   - `VITE_CLOUDINARY_CLOUD_NAME` (optional)
+   - `VITE_CLOUDINARY_UPLOAD_PRESET` (optional)
+
+## 🆘 Support
+
+For issues or questions:
+- Check [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed documentation
+- Review the `.env.example` for configuration options
+- Ensure your Neon database is properly configured
+
+## 📝 License
+
+Private project for Haoxin Listings.
+
+---
+
+**Admin Password:** `haoxin2026`

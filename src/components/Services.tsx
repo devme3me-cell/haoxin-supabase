@@ -22,8 +22,8 @@ const Services = () => {
       <div className="container px-6 lg:px-12">
         {/* Section Header */}
         <div className="text-center mb-16 lg:mb-24">
-          <p className="section-title">專業 · 誠信 ·用心 </p>
-          <h2 className="section-heading">​壕芯實業 </h2>
+          <p className="section-title">專業 · 誠信 · 用心</p>
+          <h2 className="section-heading">壕芯實業</h2>
         </div>
 
         {/* Services Grid */}

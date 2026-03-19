@@ -2,15 +2,15 @@ import * as React from "react";
 import { useState, useCallback, useRef } from "react";
 import { Upload, X, Image as ImageIcon, Cloud, HardDrive } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isSupabaseConfigured } from "@/lib/supabase";
-import { uploadImage } from "@/lib/supabase-storage";
+import { isCloudinaryConfigured } from "@/lib/cloudinary-storage";
+import { uploadImage } from "@/lib/cloudinary-storage";
 
 interface ImageUploadProps {
   value?: string;
   onChange: (value: string) => void;
   className?: string;
   disabled?: boolean;
-  /** If true and Supabase is configured, uploads to Supabase Storage */
+  /** If true and Cloudinary is configured, uploads to Cloudinary */
   useCloudStorage?: boolean;
 }
 
@@ -21,7 +21,7 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
     const [uploadError, setUploadError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const useSupabase = useCloudStorage && isSupabaseConfigured();
+    const useCloudinary = useCloudStorage && isCloudinaryConfigured();
 
     const readAsBase64 = useCallback((file: File) => {
       const reader = new FileReader();
@@ -53,8 +53,8 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
         setIsLoading(true);
         setUploadError(null);
 
-        // If Supabase is configured and cloud storage is enabled, upload to Supabase
-        if (useSupabase) {
+        // If Cloudinary is configured and cloud storage is enabled, upload to Cloudinary
+        if (useCloudinary) {
           try {
             const result = await uploadImage(file);
             if (result.error) {
@@ -76,7 +76,7 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
           readAsBase64(file);
         }
       },
-      [onChange, useSupabase, readAsBase64]
+      [onChange, useCloudinary, readAsBase64]
     );
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -135,7 +135,7 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
     );
 
     const isExternalUrl = value && !value.startsWith("data:");
-    const isSupabaseUrl = value && value.includes("supabase");
+    const isCloudinaryUrl = value && value.includes("cloudinary");
 
     return (
       <div ref={ref} className={cn("relative", className)}>
@@ -161,11 +161,11 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
               <div className="absolute top-2 left-2">
                 <div className={cn(
                   "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium backdrop-blur-sm",
-                  isSupabaseUrl
+                  isCloudinaryUrl
                     ? "bg-green-500/80 text-white"
                     : "bg-gray-800/70 text-gray-200"
                 )}>
-                  {isSupabaseUrl ? (
+                  {isCloudinaryUrl ? (
                     <>
                       <Cloud className="w-3 h-3" />
                       <span>雲端</span>
@@ -198,7 +198,7 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
                 </button>
               </div>
             </div>
-            {isExternalUrl && !isSupabaseUrl && (
+            {isExternalUrl && !isCloudinaryUrl && (
               <p className="text-xs text-muted-foreground mt-1.5 truncate">
                 {value}
               </p>
@@ -225,7 +225,7 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
               <>
                 <div className="w-10 h-10 rounded-full border-2 border-warm-gold border-t-transparent animate-spin" />
                 <p className="text-sm text-muted-foreground">
-                  {useSupabase ? "上傳至雲端..." : "處理中..."}
+                  {useCloudinary ? "上傳至雲端..." : "處理中..."}
                 </p>
               </>
             ) : (
@@ -238,7 +238,7 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
                 >
                   {isDragging ? (
                     <Upload className="w-7 h-7 text-warm-gold" />
-                  ) : useSupabase ? (
+                  ) : useCloudinary ? (
                     <Cloud className="w-7 h-7 text-muted-foreground" />
                   ) : (
                     <ImageIcon className="w-7 h-7 text-muted-foreground" />
@@ -251,10 +251,10 @@ const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
                   <p className="text-xs text-muted-foreground mt-1">
                     或點擊選擇檔案（最大 5MB）
                   </p>
-                  {useSupabase && (
+                  {useCloudinary && (
                     <p className="text-[10px] text-green-600 mt-1 flex items-center justify-center gap-1">
                       <Cloud className="w-3 h-3" />
-                      上傳至 Supabase 雲端
+                      上傳至 Cloudinary 雲端
                     </p>
                   )}
                 </div>
